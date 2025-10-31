@@ -172,7 +172,7 @@ Contains the CSS for styling the Moodle block, including the loading animation, 
 **Author**: Bruno Tavares  
 **Contact**: [brunustavares@gmail.com](mailto:brunustavares@gmail.com)  
 **LinkedIn**: [https://www.linkedin.com/in/brunomastavares/](https://www.linkedin.com/in/brunomastavares/)  
-**Copyright**: 2023-2025 Bruno Tavares  
+**Copyright**: 2023-present Bruno Tavares  
 **License**: GNU GPL v3 or later  
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

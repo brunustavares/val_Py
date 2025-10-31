@@ -17,10 +17,10 @@ print('Content-Type:text/html;charset=utf-8\r\n')
 # @package    val.Py
 # @author     Bruno Tavares <brunustavares@gmail.com>
 # @link       https://www.linkedin.com/in/brunomastavares/
-# @copyright  Copyright (C) 2019-2025 Bruno Tavares
+# @copyright  Copyright (C) 2023-present Bruno Tavares
 # @license    GNU General Public License v3 or later
 #             https://www.gnu.org/licenses/gpl-3.0.html
-# @version    2025071702
+# @version    2025103108
 # @date       2023-12-11
 #
 # This program is free software: you can redistribute it and/or modify
@@ -72,6 +72,8 @@ ERR_MSG_GROUPS = " | alerta: modo de grupo"
 ERR_MSG_MAXGRADE = " | erro: nota maxima"
 ERR_MSG_GRADETYPE = " | erro: nota invalida"
 ERR_MSG_CATEGORY = " | erro: categoria invalida"
+ERR_MSG_OPTIONS = " | erro: opcoes desconformes"
+ERR_MSG_OPTIONSNUM = " | alerta: numero de opcoes"
 ERR_MSG_HIDDEN = " | alerta: oculto"
 ERR_MSG_MULTI = " | alerta: multiplos"
 ERR_MSG_PLAGIARISM = " | alerta: TurnitIn"
@@ -774,28 +776,58 @@ def main():
             if "decisao sobre a avaliacao" in sanitize(item.text.lower()):
                 decisao = "sim"
 
-                query = "SELECT name, \
+                query = "WITH ranked_options AS ( \
+                                                 SELECT chc.id AS choice_id, \
+                                                        chc.name, \
+                                                        crsMod.idnumber, \
+                                                        crsMod.visible, \
+                                                        crsMod.groupmode, \
+                                                        IF(chc.timeclose <> 0, FROM_UNIXTIME(chc.timeclose), '" + EMPTY_DATE + "') AS closedt, \
+                                                        chcOpt.text AS option_text, \
+                                                        ROW_NUMBER() OVER (PARTITION BY chcOpt.choiceid ORDER BY chcOpt.id) AS rownum, \
+                                                        COUNT(*) OVER (PARTITION BY chcOpt.choiceid) AS total_options \
+                                                 FROM moodle.mdl_choice chc \
+                                                     JOIN moodle.mdl_choice_options chcOpt ON chcOpt.choiceid = chc.id \
+                                                     JOIN moodle.mdl_course_modules crsMod ON (crsMod.course = chc.course AND crsMod.instance = chc.id) \
+                                                 WHERE chc.course = '" + course_ID + "' \
+                                                     AND chc.name LIKE '%Decisão sobre a Avaliação%' \
+                                                 LIMIT 2 \
+                                                ) \
+                         SELECT name, \
                                 idnumber, \
+                                total_options AS optionT, \
+                                GROUP_CONCAT(CASE WHEN rownum % 2 = 1 THEN option_text END) AS option1, \
+                                GROUP_CONCAT(CASE WHEN rownum % 2 = 0 THEN option_text END) AS option2, \
                                 visible, \
                                 groupmode, \
-                                if(timeclose <> 0, from_unixtime(timeclose), '" + EMPTY_DATE + "') \
-                         FROM moodle.mdl_choice chc \
-                             INNER JOIN moodle.mdl_course_modules crsMod ON (crsMod.course = chc.course AND crsMod.instance = chc.id) \
-                         WHERE chc.course = '" + course_ID + "' \
-                             AND chc.name LIKE '%Decisão sobre a Avaliação%';"
+                                closedt \
+                         FROM ranked_options \
+                         GROUP BY choice_id, name, idnumber, total_options, visible, groupmode, closedt \
+                         ORDER BY name;"
+
                 mdl_db_cursor.execute(query)
                 myresult = mdl_db_cursor.fetchall()
 
                 if myresult[0][1].lower() != "decisao":
                     decisao += colored(ERR_MSG_IDNUM, 'red')
 
-                if myresult[0][2] != 1:
+                if myresult[0][2] != 2:
+                    if myresult[0][2] > 2:
+                        decisao += colored(ERR_MSG_OPTIONSNUM, 'yellow')
+
+                    elif myresult[0][2] < 2:
+                        decisao += colored(ERR_MSG_OPTIONSNUM, 'red')
+
+                if myresult[0][3] != "Avaliação Contínua" or myresult[0][4] != "Exame":
+                    decisao += colored(ERR_MSG_OPTIONS, 'red')
+
+                if myresult[0][5] != 1:
                     decisao += colored(ERR_MSG_HIDDEN, 'yellow')
 
-                if myresult[0][3] != 0:
+                if myresult[0][6] != 0:
                     decisao += colored(ERR_MSG_GROUPS, 'yellow')
 
-                if str(myresult[0][4]) != EMPTY_DATE:
+                if str(myresult[0][7]) != EMPTY_DATE:
                     decisao += colored(ERR_MSG_DTFILLED, 'yellow')
 
                 if decisao_end == EMPTY_DATE:
@@ -1318,18 +1350,28 @@ def main():
              FROM moodle.mdl_url \
              WHERE course = '" + course_ID + "';"
     mdl_db_cursor.execute(query)
-    myresult = mdl_db_cursor.fetchall()
+    DB_links = mdl_db_cursor.fetchall()
+
+    page = BeautifulSoup(page2validate.content, "html.parser")
+    page_links = []
+    for a_tag in page.find_all("a", href=True):
+        page_links.append(a_tag["href"])
 
     headers = ["URL",
                "resultado"]
+    
+    links2check = DB_links + [(link,) for link in page_links if "elearning.uab.pt" not in link
+                                                             and "#" not in link
+                                                             and "moodle" not in link
+                                                             and "brunomastavares"not in link]
 
-    if len(myresult) > 0:
+    if len(links2check) > 0:
         T_items += 1
 
         title = "URLs:"
         print(sanitize(title))
 
-        for link in tqdm(myresult):
+        for link in tqdm(links2check):
             if link[0].find(str(urlparse(wwwroot).netloc)) == -1:
                 try:
                     try_link = requests.get(link[0], timeout=5)
