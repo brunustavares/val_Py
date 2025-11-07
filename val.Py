@@ -1360,9 +1360,23 @@ def main():
     headers = ["URL",
                "resultado"]
     
+    # TODO: passar links a excluir para o bloco Moodle
     links2check = DB_links + [(link,) for link in page_links if "elearning.uab.pt" not in link
                                                              and "#" not in link
                                                              and "moodle" not in link
+                                                             and "wiseflow" not in link
+                                                             and "portal.uab.pt" not in link
+                                                             and "netpa.uab.pt" not in link
+                                                             and "arquivo.uab.pt" not in link
+                                                             and "sitcon.uab.pt" not in link
+                                                             and "AvalDocentes" not in link
+                                                             and "prezi.com/p/p16bbu2vvx8e" not in link
+                                                             and "prezi.com/embed/nbcuhusgrwx3" not in link
+                                                             and "facebook.com/universidadeaberta.portugal" not in link
+                                                             and "twitter.com/uaberta" not in link
+                                                             and "instagram.com/universidadeabertaportugal" not in link
+                                                             and "linkedin.com/school/universidade-aberta" not in link
+                                                             and "youtube.com/user/UAbPT" not in link
                                                              and "brunomastavares"not in link]
 
     if len(links2check) > 0:
