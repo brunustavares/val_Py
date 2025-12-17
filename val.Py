@@ -172,7 +172,7 @@ mdl_db.close()
 def auth():
     # pt: preencher formulário de autenticação
     # en: fill authentication form
-    auth_url = wwwroot + '/login/index.php?username=' + username
+    auth_url = wwwroot + '/login/index.php?auth=local&username=' + username
     auth_page = session.get(auth_url)
     cookie = auth_page.cookies.get_dict()
     pattern = '<input type="hidden" name="logintoken" value="\w{32}">'
