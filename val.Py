@@ -758,7 +758,7 @@ def main():
                  FROM `moodle`.`mdl_course_modules` `crs_mod` \
                      INNER JOIN `moodle`.`mdl_choice` `chc` ON `chc`.`id` = `crs_mod`.`instance` \
                      INNER JOIN `moodle`.`mdl_course` `crs` ON `crs`.`id` = `crs_mod`.`course` \
-                 WHERE `crs`.`idnumber` = 'SSTE-AT' \
+                 WHERE `crs`.`id` = 421 \
                      AND (`crs_mod`.`idnumber` = 'decisao_S1' \
                      OR `crs_mod`.`idnumber` = 'decisao_S2') \
                  ORDER BY data_fim ASC;"
