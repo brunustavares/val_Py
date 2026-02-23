@@ -430,11 +430,16 @@ def main():
                                 ('PUC' in (tag['data-activityname']))))
         
         if (len(PUC_obj)) > 0:
-            try:
-                PUC_obj_URL = PUC_obj[0].find('a')['href']
+            for obj in PUC_obj:
+                if "livro" in obj.text.lower() or "book" in obj.text.lower():
+                    PUC_obj_URL = obj.find('a')['href']
+                    break
 
-            except Exception:
-                PUC_obj_URL = None
+            # try:
+            #     PUC_obj_URL = PUC_obj[0].find('a')['href']
+
+            # except Exception:
+            #     PUC_obj_URL = None
 
         else:
             PUC_obj_URL = None
@@ -445,11 +450,16 @@ def main():
                                 ('learning contract' in (tag['data-activityname']).lower())))
         
         if (len(CdA_obj)) > 0:
-            try:
-                CdA_obj_URL = CdA_obj[0].find('a')['href']
+            for obj in CdA_obj:
+                if "livro" in obj.text.lower() or "book" in obj.text.lower():
+                    CdA_obj_URL = obj.find('a')['href']
+                    break
 
-            except Exception:
-                CdA_obj_URL = None
+            # try:
+            #     CdA_obj_URL = CdA_obj[0].find('a')['href']
+
+            # except Exception:
+            #     CdA_obj_URL = None
 
         else:
             CdA_obj_URL = None
