@@ -429,6 +429,8 @@ def main():
                                 ('curricular unit plan' in (tag['data-activityname']).lower()) or 
                                 ('PUC' in (tag['data-activityname']))))
         
+        PUC_obj_URL = None
+
         if (len(PUC_obj)) > 0:
             for obj in PUC_obj:
                 if "livro" in obj.text.lower() or "book" in obj.text.lower():
@@ -441,14 +443,13 @@ def main():
             # except Exception:
             #     PUC_obj_URL = None
 
-        else:
-            PUC_obj_URL = None
-
     elif UC_type == 2:
         CdA_obj = page.find_all(lambda tag: tag.has_attr('data-activityname') and
                                (('contrato de aprendizagem' in (tag['data-activityname']).lower()) or 
                                 ('learning contract' in (tag['data-activityname']).lower())))
         
+        CdA_obj_URL = None
+
         if (len(CdA_obj)) > 0:
             for obj in CdA_obj:
                 if "livro" in obj.text.lower() or "book" in obj.text.lower():
@@ -460,9 +461,6 @@ def main():
 
             # except Exception:
             #     CdA_obj_URL = None
-
-        else:
-            CdA_obj_URL = None
 
     # pt: isolar itens da UC
     # en: isolate course items
