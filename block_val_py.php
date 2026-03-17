@@ -118,8 +118,7 @@ class block_val_py extends block_base
 
         //verifica se o utilizador está devidamente autenticado e detém as permissões correctas
         if (!isloggedin()
-            // || !has_capability('moodle/course:create', get_context_instance(CONTEXT_SYSTEM))
-            || !has_capability('moodle/site:approvecourse', get_context_instance(CONTEXT_SYSTEM))
+            || !has_capability('moodle/site:approvecourse', \core\context\system::instance())
             
         ) { //em caso negativo, não exibe qualquer conteúdo
             $this->content = '';
