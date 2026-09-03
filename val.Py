@@ -76,7 +76,8 @@ ERR_MSG_OPTIONS = " | erro: opcoes desconformes"
 ERR_MSG_OPTIONSNUM = " | alerta: numero de opcoes"
 ERR_MSG_HIDDEN = " | alerta: oculto"
 ERR_MSG_MULTI = " | alerta: multiplos"
-ERR_MSG_PLAGIARISM = " | alerta: TurnitIn"
+# ERR_MSG_PLAGIARISM = " | alerta: TurnitIn"
+ERR_MSG_PLAGIARISM = " | alerta: Originality"
 ERR_MSG_FDBKTYPE = " | alerta: tipos de feedback"
 ERR_MSG_DTFILLED = " | alerta: datas preenchidas"
 ERR_MSG_DTOVERLAP = " | alerta: datas sobrepostas"
@@ -319,7 +320,7 @@ def val_folio(idnumber, folio_cfg):
         result += colored(ERR_MSG_CATEGORY, 'red')
 
     if "plagiarism" not in folio_cfg or \
-        folio_cfg["plagiarism"] != "1":
+        folio_cfg["plagiarism"] != 1:
         result += colored(ERR_MSG_PLAGIARISM, 'yellow')
 
     if "feedback" not in folio_cfg or \
@@ -428,7 +429,7 @@ def main():
                                (('plano da unidade curricular' in (tag['data-activityname']).lower()) or 
                                 ('curricular unit plan' in (tag['data-activityname']).lower()) or 
                                 ('PUC' in (tag['data-activityname']))))
-        
+
         PUC_obj_URL = None
 
         if (len(PUC_obj)) > 0:
@@ -646,8 +647,9 @@ def main():
                  "book" in item.text.lower()))):
                 PUC2validate = session.get(PUC_obj_URL)
                 PUC_content = BeautifulSoup(PUC2validate.content, HTML_PARSER)
+
                 try:
-                    PUC_UC = PUC_content.find('a', attrs={'title': '1. A Unidade Curricular'})['href']
+                    PUC_UC = PUC_content.find('a', string='1. A Unidade Curricular')['href']
                 
                 except Exception:
                     PUC_UC = None
@@ -886,7 +888,8 @@ def main():
                         if(device.nosubmissions IS NULL, 'NA', if(device.nosubmissions = 0, 1, 0)), \
                         if(device.teamsubmission IS NULL, 'NA', teamsubmission), \
                         if(asg_cfg.plugin IS NULL, 'NA', REPLACE(GROUP_CONCAT(asg_cfg.plugin SEPARATOR ', '), ', ', ',\n')), \
-                        plag.value, \
+                        /* plag.value, */ \
+                        plag.enabled, \
                         groupmode, \
                         REPLACE(grp.name, ' ', '\n'), \
                         REPLACE(if(allowsubmissionsfromdate <> 0, from_unixtime(allowsubmissionsfromdate), NULL), ' ', '\n'), \
@@ -923,14 +926,15 @@ def main():
                      LEFT JOIN moodle.mdl_groupings grp ON (grp.courseid = crs_mod.course AND grp.id = crs_mod.groupingid) \
                      LEFT JOIN moodle.mdl_grade_categories grd_cat ON grd_cat.id = grd_it.categoryid \
                      LEFT JOIN moodle.mdl_grade_categories grd_prt ON grd_prt.id = grd_cat.parent \
-                     LEFT JOIN moodle.mdl_plagiarism_turnitin_config plag ON plag.cm = crs_mod.id \
+                  /* LEFT JOIN moodle.mdl_plagiarism_turnitin_config plag ON plag.cm = crs_mod.id */ \
+                     LEFT JOIN moodle.mdl_plagiarism_originality_settings plag ON plag.cm = crs_mod.id \
                  WHERE (grd_it.itemname IS NOT NULL \
                          AND grd_it.itemname <> '') \
                      AND ((asg_cfg.subtype = 'assignfeedback' \
                              AND asg_cfg.value = '1') \
                          OR asg_cfg.subtype IS NULL) \
-                     AND (plag.name = 'use_turnitin' \
-                         OR plag.name IS NULL) \
+                  /* AND (plag.name = 'use_turnitin' \
+                         OR plag.name IS NULL) */ \
                      GROUP BY grd_it.id \
                      ORDER BY itemname;"
         mdl_db_cursor.execute(query)
@@ -957,7 +961,8 @@ def main():
                    "submissão\nactivada",
                    "submissão\nem grupo",
                    "tipos de\nfeedback",
-                   "TurnitIn",
+              #    "TurnitIn",
+                   "Originality",
                    "modo de\ngrupo",
                    "nome do\ngrupo",
                    "submeter\ndesde",
